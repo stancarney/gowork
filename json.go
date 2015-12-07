@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"bytes"
-	"log"
 )
 
 type Message struct {
