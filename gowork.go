@@ -1,0 +1,71 @@
+package gowork
+
+import "time"
+
+type EventCode string
+
+const (
+	ACCESS EventCode = "ACCESS"
+	CREATE EventCode = "CREATE"
+	DELETE EventCode = "DELETE"
+	DENIED EventCode = "DENIED"
+	ERROR EventCode = "ERROR"
+	READ EventCode = "READ"
+	UPDATE EventCode = "UPDATE"
+
+	PERM_LOGIN Permission = "LOGIN"
+	PERM_SUPER_USER Permission = "SUPER_USER" //Has all permissions except LOGIN
+)
+
+type Session struct {
+	Id         string             `json:"id"`
+	Created    time.Time          `json:"created" validate:"nonzero" datastore:"cr"`
+	LastAccess time.Time          `json:"access" validate:"nonzero" datastore:"access"`
+	Values     map[string]string  `json:"values" validate:"nonzero"` //TODO:Stan investigate changing value to interface or []byte
+	UserId     string             `json:"userid" validate:"nonzero"`
+	Version    int                `json:"v" validate:"min=0" datastore:"v"`
+}
+
+type Config struct {
+	Id          string    `json:"id" datastore:"id"`
+	Created     time.Time `json:"created,omitempty" validate:"nonzero" datastore:"cr"`
+	Description string    `json:"desc,omitempty" validate:"nonzero" datastore:"descr"`
+	Value       string    `json:"value,omitempty" validate:"nonzero"`
+	Version     int       `json:"v,omitempty" validate:"min=0" datastore:"v"`
+}
+
+
+type User struct {
+	Id          string    `json:"id" datastore:"id"`
+	Created     time.Time `json:"created" validate:"nonzero" datastore:"cr"`
+	Email       string    `json:"email" validate:"nonzero"`
+	Name        string    `json:"name" validate:"nonzero"`
+	Password    string    `json:"password,omitempty" datastore:"pass"` //Password isn't set for newly created users.
+	Permissions Permissions  `json:"perms" validate:"nonzero" datastore:"perms"`
+	Version     int       `json:"v" validate:"min=0" datastore:"v"`
+}
+
+func (u *User) HasPermission(p interface{}) bool {
+	return u.Permissions.HasPermission(p.(Permission))
+}
+
+type Permission string
+type Permissions []Permission
+
+func (u *Permissions) HasPermission(perm Permission) bool {
+	for _, p := range *u {
+		if p == perm {
+			return true
+		}
+
+		//SUPER_USER's can still have their LOGIN permission revoked
+		if perm == PERM_LOGIN {
+			continue;
+		}
+
+		if p == PERM_SUPER_USER {
+			return true
+		}
+	}
+	return false
+}
