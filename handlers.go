@@ -15,13 +15,12 @@ type newRequestContext func(r *http.Request) Context
 
 type DebugHandler struct {
 	Debug bool
-	Name string
 }
 
 func (s *DebugHandler) New(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.Debug {
-			log.Printf("++++++++++++++++++++++++++++++++ %s +++++++++++++++++++++++++++++++++++++++++++++++", s.Name)
+			log.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 			data, _ := httputil.DumpRequest(r, true)
 			log.Printf("REQUEST DUMP (To disable this set debug=false in config.toml): %s\n\n", data)
 		}
@@ -38,7 +37,6 @@ type AuthHandler struct {
 	InsecureUrls     []string
 	CookieName       string
 	IndexFile        string
-	Prefix           string
 }
 
 func (s *AuthHandler) New(handler http.Handler) http.Handler {
@@ -93,7 +91,7 @@ func (s *AuthHandler) New(handler http.Handler) http.Handler {
 
 func (s *AuthHandler) IsStaticAsset(url string) bool {
 	for _, v := range s.StaticAssetPaths {
-		if strings.HasPrefix(url, s.Prefix + v) {
+		if strings.HasPrefix(url, v) {
 			return true
 		}
 	}
