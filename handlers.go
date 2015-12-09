@@ -15,12 +15,13 @@ type newRequestContext func(r *http.Request) Context
 
 type DebugHandler struct {
 	Debug bool
+	Name  string
 }
 
 func (s *DebugHandler) New(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.Debug {
-			log.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+			log.Printf("+++++++++++++++++++++++++++++++++++++ %s ++++++++++++++++++++++++++++++++++++++++++", s.Name)
 			data, _ := httputil.DumpRequest(r, true)
 			log.Printf("REQUEST DUMP (To disable this set debug=false in config.toml): %s\n\n", data)
 		}
@@ -28,35 +29,60 @@ func (s *DebugHandler) New(handler http.Handler) http.Handler {
 	})
 }
 
-// AuthHandler manages the setting of the userId into the session when the required cookie is present.
-// This handler requires ContextHandler to be run first as it depends on the Context being present.
-type AuthHandler struct {
-	GetSession       getSession
-	GetUser          getUser
+type StaticAssetHandler struct {
 	StaticAssetPaths []string
-	InsecureUrls     []string
-	CookieName       string
-	IndexFile        string
 }
 
-func (s *AuthHandler) New(handler http.Handler) http.Handler {
+func (s *StaticAssetHandler) New(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		//Do this right away so we have the ip stored on the context.
-		ctx := GetContext(r)
-		ctx.Put("ip", GetIp(r))
-
 		url := r.URL.String()
 		if s.IsStaticAsset(url) {
 			handler.ServeHTTP(w, r)
 			return
 		}
+	})
+}
 
+func (s *StaticAssetHandler) IsStaticAsset(url string) bool {
+	for _, v := range s.StaticAssetPaths {
+		if strings.HasPrefix(url, v) {
+			return true
+		}
+	}
+	return false
+}
+
+type InsecureUrlHandler struct {
+	InsecureUrls []string
+}
+
+func (s *InsecureUrlHandler) New(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		url := r.URL.String()
 		if s.IsInsecureUrl(url) {
 			handler.ServeHTTP(w, r)
 			return
 		}
+	})
+}
 
+func (s *InsecureUrlHandler) IsInsecureUrl(url string) bool {
+	for _, v := range s.InsecureUrls {
+		if strings.HasPrefix(url, v) {
+			return true
+		}
+	}
+	return false
+}
+
+type SessionHandler struct {
+	GetSession getSession
+	GetUser    getUser
+	CookieName string
+}
+
+func (s *SessionHandler) New(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := s.GetSession(r, s.CookieName)
 		if err != nil {
 			//Session expired
@@ -64,6 +90,7 @@ func (s *AuthHandler) New(handler http.Handler) http.Handler {
 			return
 		}
 
+		ctx := GetContext(r)
 		//Try to load the user and set it on the context on each request. Regardless if the individual is logged in or not.
 		if userid, ok := session.Values["userid"]; ok {
 			if user, err := s.GetUser(ctx, userid.(string)); err == nil {
@@ -77,34 +104,7 @@ func (s *AuthHandler) New(handler http.Handler) http.Handler {
 			handler.ServeHTTP(w, r)
 			return
 		}
-
-		//Calls to /sys are from angular.
-		if strings.HasPrefix(url, "/sys") {
-			WriteErrorToJSON(w, 401, "Login Required")
-			return
-		}
-
-		//This would be a direct call to a page (say /client) without a valid session. The index page needs to be returned so angular can request the page (/client) and get the 401 code above.
-		http.ServeFile(w, r, s.IndexFile)
 	})
-}
-
-func (s *AuthHandler) IsStaticAsset(url string) bool {
-	for _, v := range s.StaticAssetPaths {
-		if strings.HasPrefix(url, v) {
-			return true
-		}
-	}
-	return false
-}
-
-func (s *AuthHandler) IsInsecureUrl(url string) bool {
-	for _, v := range s.InsecureUrls {
-		if strings.HasPrefix(url, v) {
-			return true
-		}
-	}
-	return false
 }
 
 // ContextHandler is a simple http.Handler that attaches the configured Impl Context to the Gorilla Context. It effectively hides the Gorilla Context from the rest of the application.
