@@ -35,7 +35,7 @@ type Config struct {
 }
 
 type User interface {
-	HasPermission(p interface{}) bool
+	HasPermission(p Permission) bool
 }
 
 type Permission string
