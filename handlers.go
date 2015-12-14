@@ -6,11 +6,8 @@ import (
 	"net/http"
 	"log"
 	"net/http/httputil"
-	"github.com/gorilla/sessions"
 )
 
-type getSession func(r *http.Request, name string) (*sessions.Session, error)
-type getUser func(ctx Context, id string) (user interface{}, err error)
 type newRequestContext func(r *http.Request) Context
 
 type DebugHandler struct {

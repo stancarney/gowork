@@ -115,7 +115,7 @@ func (s *CassandraCookieStore) save(ctx Context, session *sessions.Session) (err
 		Created: t,
 		LastAccess: t,
 		Values: s.ConvertToStringMap(session.Values),
-		UserId: ctx.Get("user").(*User).Id, //We store the UserId directly on model.Session to make it easier to report via the UI.
+		UserId: ctx.GetString("userid"), //We store the UserId directly on model.Session to make it easier to report via the UI.
 		Version: 0,
 	}
 

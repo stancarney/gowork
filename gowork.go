@@ -34,8 +34,11 @@ type Config struct {
 	Version     int       `json:"v,omitempty" validate:"min=0" datastore:"v"`
 }
 
+type User interface {
+	HasPermission(p interface{}) bool
+}
 
-type User struct {
+type UserImpl struct {
 	Id          string    `json:"id" datastore:"id"`
 	Created     time.Time `json:"created" validate:"nonzero" datastore:"cr"`
 	Email       string    `json:"email" validate:"nonzero"`
@@ -45,7 +48,7 @@ type User struct {
 	Version     int       `json:"v" validate:"min=0" datastore:"v"`
 }
 
-func (u *User) HasPermission(p interface{}) bool {
+func (u *UserImpl) HasPermission(p interface{}) bool {
 	return u.Permissions.HasPermission(p.(Permission))
 }
 

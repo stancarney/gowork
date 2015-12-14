@@ -15,7 +15,7 @@ type AppScaffold struct {
 
 //GetEntities uses reflection to look up the call function on app.App.Impl and call it.
 //This was introduced to minimize the amount of duplicated code in the controllers (i.e. sys).
-func (a * AppScaffold) GetEntities(w http.ResponseWriter, r *http.Request, user *User, function interface{}, perm Permission) {
+func (a * AppScaffold) GetEntities(w http.ResponseWriter, r *http.Request, user User, function interface{}, perm Permission) {
 
 	if user == nil {
 		WriteErrorToJSON(w, 500, "User session not found")
@@ -60,7 +60,7 @@ func (a * AppScaffold) GetEntities(w http.ResponseWriter, r *http.Request, user 
 
 //GetEntity uses reflection to look up the call function and call it along with the id request parameter (path actually).
 //It is almost identical to GetEntities with the exception of passing two args to the call function. The function to call and the id.
-func (a * AppScaffold) GetEntity(w http.ResponseWriter, r *http.Request, user *User, function interface{}, perm Permission) {
+func (a * AppScaffold) GetEntity(w http.ResponseWriter, r *http.Request, user User, function interface{}, perm Permission) {
 
 	if user == nil {
 		WriteErrorToJSON(w, 500, "User session not found")
@@ -98,7 +98,7 @@ func (a * AppScaffold) GetEntity(w http.ResponseWriter, r *http.Request, user *U
 
 //EntityOp fulfills Create, Update, and Delete functions. On a delete the id var must be present (i.e. route defined like: /myentity/{id}) and entity must be nil. The provided function will be called deleting the correct entity.
 //With Create and Update entity mush be a pointer to the struct of the correct model so a json.Decode can populate it with information present in the request.
-func (a * AppScaffold) EntityOp(w http.ResponseWriter, r *http.Request, user *User, entity interface{}, function interface{}, successEventCode EventCode, perm Permission) {
+func (a * AppScaffold) EntityOp(w http.ResponseWriter, r *http.Request, user User, entity interface{}, function interface{}, successEventCode EventCode, perm Permission) {
 
 	if user == nil {
 		WriteErrorToJSON(w, 500, "User session not found")
