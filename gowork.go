@@ -38,20 +38,6 @@ type User interface {
 	HasPermission(p interface{}) bool
 }
 
-type UserImpl struct {
-	Id          string    `json:"id" datastore:"id"`
-	Created     time.Time `json:"created" validate:"nonzero" datastore:"cr"`
-	Email       string    `json:"email" validate:"nonzero"`
-	Name        string    `json:"name" validate:"nonzero"`
-	Password    string    `json:"password,omitempty" datastore:"pass"` //Password isn't set for newly created users.
-	Permissions Permissions  `json:"perms" validate:"nonzero" datastore:"perms"`
-	Version     int       `json:"v" validate:"min=0" datastore:"v"`
-}
-
-func (u *UserImpl) HasPermission(p interface{}) bool {
-	return u.Permissions.HasPermission(p.(Permission))
-}
-
 type Permission string
 type Permissions []Permission
 
