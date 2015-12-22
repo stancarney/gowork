@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 )
 
-type createEvent func(ctx Context, code EventCode, err interface{}, description ...string)
+type createEvent func(ctx Context, code EventCode, err error, description ...string)
 
 type AppScaffold struct {
 	CreateEvent createEvent
@@ -85,7 +85,7 @@ func (a * AppScaffold) GetEntity(w http.ResponseWriter, r *http.Request, user Us
 	data := result[0].Interface()
 	err := result[1].Interface()
 	if err != nil {
-		a.CreateEvent(ctx, ERROR, err, GetFunctionName(function), "Error", err.(error).Error())
+		a.CreateEvent(ctx, ERROR, err.(error), GetFunctionName(function), "Error", err.(error).Error())
 		WriteErrorToJSON(w, 404, err)
 		return
 	}
