@@ -13,6 +13,7 @@ import (
 const (
 	STALE_ENTITY_MSG = "Stale Entity. It has been updated in another session! Please reload and try again." //TODO:Stan move this out of impl. Maybe model?
 	DEFAULT_CONSISTENCY = gocql.LocalQuorum
+	NOT_FOUND = "not found"
 )
 
 type unmarshaler func(entityMap map[string]interface{}, entity interface{})

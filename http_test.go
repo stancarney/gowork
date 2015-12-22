@@ -30,7 +30,7 @@ func TestGetLimit_Nothing(t *testing.T) {
 	r := GetLimit(&request)
 
 	//verify
-	require.Equal(t, -1, r)
+	require.Equal(t, 0, r)
 }
 
 func TestGetLimit_Invalid(t *testing.T) {
@@ -43,7 +43,7 @@ func TestGetLimit_Invalid(t *testing.T) {
 	r := GetLimit(&request)
 
 	//verify
-	require.Equal(t, -1, r)
+	require.Equal(t, 0, r)
 }
 
 func TestGetDate_Valid(t *testing.T) {

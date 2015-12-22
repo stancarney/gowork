@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 )
 
-type createEvent func(ctx Context, code EventCode, entity interface{}, old interface{}, new interface{}, description ...string)
+type createEvent func(ctx Context, code EventCode, err interface{}, description ...string)
 
 type AppScaffold struct {
 	CreateEvent createEvent
@@ -25,12 +25,12 @@ func (a * AppScaffold) GetEntities(w http.ResponseWriter, r *http.Request, user 
 	ctx := GetContext(r)
 
 	if !user.HasPermission(perm) {
-		a.CreateEvent(ctx, DENIED, nil, nil, nil, GetFunctionName(function))
+		a.CreateEvent(ctx, DENIED, nil, GetFunctionName(function))
 		WriteErrorToJSON(w, 403, "Permission denied")
 		return
 	}
 
-	a.CreateEvent(ctx, READ, nil, nil, nil, GetFunctionName(function))
+	a.CreateEvent(ctx, READ, nil, GetFunctionName(function))
 
 	argCtx := reflect.ValueOf(ctx)
 	argDate := reflect.ValueOf(GetDate(r))
@@ -71,7 +71,7 @@ func (a * AppScaffold) GetEntity(w http.ResponseWriter, r *http.Request, user Us
 	vars := mux.Vars(r)
 
 	if !user.HasPermission(perm) {
-		a.CreateEvent(ctx, DENIED, nil, nil, nil, GetFunctionName(function), vars["id"])
+		a.CreateEvent(ctx, DENIED, nil, GetFunctionName(function), vars["id"])
 		WriteErrorToJSON(w, 403, "Permission denied")
 		return
 	}
@@ -85,12 +85,12 @@ func (a * AppScaffold) GetEntity(w http.ResponseWriter, r *http.Request, user Us
 	data := result[0].Interface()
 	err := result[1].Interface()
 	if err != nil {
-		a.CreateEvent(ctx, ERROR, nil, nil, nil, GetFunctionName(function), "Error", err.(error).Error())
+		a.CreateEvent(ctx, ERROR, err, GetFunctionName(function), "Error", err.(error).Error())
 		WriteErrorToJSON(w, 404, err)
 		return
 	}
 
-	a.CreateEvent(ctx, READ, data, nil, nil, GetFunctionName(function))
+	a.CreateEvent(ctx, READ, nil, GetFunctionName(function))
 
 	WriteJSON(w, data)
 	return
@@ -108,7 +108,7 @@ func (a * AppScaffold) EntityOp(w http.ResponseWriter, r *http.Request, user Use
 	ctx := GetContext(r)
 
 	if !user.HasPermission(perm) {
-		a.CreateEvent(ctx, DENIED, entity, nil, nil, GetFunctionName(function))
+		a.CreateEvent(ctx, DENIED, nil, GetFunctionName(function))
 		WriteErrorToJSON(w, 403, "Permission denied")
 		return
 	}
@@ -138,7 +138,7 @@ func (a * AppScaffold) EntityOp(w http.ResponseWriter, r *http.Request, user Use
 		return
 	}
 
-	a.CreateEvent(ctx, successEventCode, entity, nil, nil, GetFunctionName(function))
+	a.CreateEvent(ctx, successEventCode, nil, GetFunctionName(function))
 	WriteJSON(w, entity)
 	return
 }

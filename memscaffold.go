@@ -27,7 +27,7 @@ func (mt *MemTable) Get(id string) (interface{}, error) {
 
 	r, e := mt.Table[id]
 	if !e {
-		return nil, errors.New("not found")
+		return nil, errors.New(NOT_FOUND)
 	}
 
 	return r, nil
@@ -39,7 +39,7 @@ func (mt *MemTable) Update(id string, o interface{}) error {
 
 	old, e := mt.Table[id]
 	if !e {
-		return errors.New("not found")
+		return errors.New(NOT_FOUND)
 	}
 
 	oldValue := reflect.Indirect(reflect.ValueOf(old))

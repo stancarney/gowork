@@ -12,11 +12,11 @@ func GetLimit(r *http.Request) (limit int) {
 	if num != "" {
 		limit, err := strconv.Atoi(num)
 		if err != nil {
-			return -1
+			return 0
 		}
 		return limit
 	}
-	return -1
+	return 0
 }
 
 func GetDate(r *http.Request) (date string) {
