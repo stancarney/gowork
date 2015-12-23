@@ -80,6 +80,15 @@ func WriteErrorToJSON(w http.ResponseWriter, code int, err interface{}) {
 	return
 }
 
+func JSONResponse(w http.ResponseWriter, data interface{}, err interface{}) {
+	if err != nil {
+		WriteErrorToJSON(w, 500, err)
+		return
+	}
+
+	WriteJSON(w, data)
+}
+
 func FormatError(err interface{}, resp *ErrorResponse) {
 
 	index := 0
