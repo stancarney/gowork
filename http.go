@@ -3,7 +3,6 @@ package gowork
 import (
 	"net/http"
 	"strconv"
-	"net"
 )
 
 func GetLimit(r *http.Request) (limit int) {
@@ -28,17 +27,3 @@ func GetDate(r *http.Request) (date string) {
 	}
 	return
 }
-
-func GetIp(r *http.Request) string {
-	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {
-		return ip
-	}
-
-	if ip := r.Header.Get("X-Real-Ip"); ip != "" {
-		return ip
-	}
-
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	return ip
-}
-
