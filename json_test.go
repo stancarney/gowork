@@ -7,6 +7,7 @@ import (
 	validator "gopkg.in/validator.v2"
 	"net/http/httptest"
 	"testing"
+	"errors"
 )
 
 type TestStruct struct {
@@ -127,4 +128,49 @@ func TestWriteErrorToJSON_String(t *testing.T) {
 	require.Equal(t, 1, len(w.HeaderMap))
 	require.Equal(t, "application/json", w.HeaderMap["Content-Type"][0])
 	require.Equal(t, FormatJSON("{\"errors\":[{\"msg\":\"My Error\"}],\"count\":1}"), w.Body.String())
+}
+
+func TestJSONResponse_NoError(t *testing.T) {
+
+	//setup
+	w := httptest.NewRecorder()
+
+	//execute
+	JSONResponse(w, "My Data", nil)
+
+	//verify
+	require.Equal(t, 200, w.Code)
+	require.Equal(t, 1, len(w.HeaderMap))
+	require.Equal(t, "application/json", w.HeaderMap["Content-Type"][0])
+	require.Equal(t, "\"My Data\"", w.Body.String())
+}
+
+func TestJSONResponse_NotFoundError(t *testing.T) {
+
+	//setup
+	w := httptest.NewRecorder()
+
+	//execute
+	JSONResponse(w, "My Data", NewNotFoundError())
+
+	//verify
+	require.Equal(t, 404, w.Code)
+	require.Equal(t, 1, len(w.HeaderMap))
+	require.Equal(t, "application/json", w.HeaderMap["Content-Type"][0])
+	require.Equal(t, FormatJSON("{\"errors\":[{\"msg\":\"not found\"}],\"count\":1}"), w.Body.String())
+}
+
+func TestJSONResponse_Error(t *testing.T) {
+
+	//setup
+	w := httptest.NewRecorder()
+
+	//execute
+	JSONResponse(w, "My Data", errors.New("Blah"))
+
+	//verify
+	require.Equal(t, 500, w.Code)
+	require.Equal(t, 1, len(w.HeaderMap))
+	require.Equal(t, "application/json", w.HeaderMap["Content-Type"][0])
+	require.Equal(t, FormatJSON("{\"errors\":[{\"msg\":\"Blah\"}],\"count\":1}"), w.Body.String())
 }

@@ -81,6 +81,12 @@ func WriteErrorToJSON(w http.ResponseWriter, code int, err interface{}) {
 }
 
 func JSONResponse(w http.ResponseWriter, data interface{}, err interface{}) {
+
+	if _, ok := err.(NotFoundError); ok {
+		WriteErrorToJSON(w, 404, err)
+		return
+	}
+
 	if err != nil {
 		WriteErrorToJSON(w, 500, err)
 		return
