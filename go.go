@@ -15,6 +15,13 @@ func GetFunctionName(i interface{}) string {
 	return segments[len(segments) - 1]
 }
 
+func GetCurrentFunctionName() string {
+	pc := make([]uintptr, 10)  // at least 1 entry needed
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	return f.Name()
+}
+
 func GetStructName(i interface{}) string {
 	if i == nil {
 		return ""
