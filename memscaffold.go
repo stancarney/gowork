@@ -8,11 +8,9 @@ import (
 )
 
 type MemTable struct {
-	Table memMap
+	Table map[string]interface{}
 	mutex *sync.Mutex
 }
-
-type memMap map[string]interface{}
 
 func (mt *MemTable) Create(id string, o interface{}) {
 	mt.mutex.Lock()
@@ -98,10 +96,17 @@ func (mt *MemTable) GetAll(date string, limit int, entity interface{}) interface
 	return x.Elem().Interface()
 }
 
+func (mt *MemTable) All() interface{} {
+	mt.mutex.Lock()
+	defer mt.mutex.Unlock()
+
+	return StringMapToSlice(mt.Table)
+}
+
 func (mt MemTable) Dump() {
 	log.Println(mt.Table)
 }
 
 func NewMemTable() *MemTable {
-	return &MemTable{Table: memMap{}, mutex: &sync.Mutex{}}
+	return &MemTable{Table: make(map[string]interface{}), mutex: &sync.Mutex{}}
 }

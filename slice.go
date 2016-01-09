@@ -2,7 +2,6 @@ package gowork
 
 import (
 	"reflect"
-	"log"
 )
 
 func SliceContains(slice interface{}, v interface{}) bool {
@@ -19,9 +18,21 @@ func SliceContains(slice interface{}, v interface{}) bool {
 				return true
 			}
 		}
-	default:
-		log.Println("Not a slice:", reflect.TypeOf(slice).Kind())
 	}
 	return false
 }
 
+func StringMapToSlice(m map[string]interface{}) interface{} {
+
+	var r reflect.Value
+
+	i := 0
+	for _, v := range m {
+		if !r.IsValid() {
+			val := reflect.Indirect(reflect.ValueOf(v))
+			r = reflect.MakeSlice(reflect.SliceOf(val.Type()), len(m), len(m))
+		}
+		r.Index(i).Set(reflect.ValueOf(v).Elem())
+	}
+	return r.Interface()
+}
