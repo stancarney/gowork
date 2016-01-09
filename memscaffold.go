@@ -12,11 +12,14 @@ type MemTable struct {
 	mutex *sync.Mutex
 }
 
-func (mt *MemTable) Create(id string, o interface{}) {
+// Create makes a new table entry with the provided id. An error is never returned from this function and is intended for use in overriding functions.
+func (mt *MemTable) Create(id string, o interface{}) error {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
 
 	mt.Table[id] = o
+
+	return nil
 }
 
 func (mt *MemTable) Get(id string) (interface{}, error) {
