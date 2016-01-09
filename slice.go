@@ -34,5 +34,10 @@ func StringMapToSlice(m map[string]interface{}) interface{} {
 		}
 		r.Index(i).Set(reflect.ValueOf(v).Elem())
 	}
+
+	if !r.IsValid() {
+		return nil
+	}
+
 	return r.Interface()
 }
