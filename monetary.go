@@ -13,41 +13,39 @@ type MonetaryAmount struct {
 
 var Zero = MonetaryAmount{inf.NewDec(0, 0)}
 
-func (m *MonetaryAmount) Add(ma MonetaryAmount) (nma MonetaryAmount) {
+func (m MonetaryAmount) Add(ma MonetaryAmount) MonetaryAmount {
 	m.initialize()
 	d := new(inf.Dec).Add(m.Dec, ma.Dec)
-	nma = MonetaryAmount{d}
-	return
+	return MonetaryAmount{d}
 }
 
-func (m *MonetaryAmount) Neg() (nma MonetaryAmount) {
+func (m MonetaryAmount) Neg() MonetaryAmount {
 	m.initialize()
 	d := new(inf.Dec).Neg(m.Dec)
-	nma = MonetaryAmount{d}
-	return
+	return MonetaryAmount{d}
 }
 
-func (m *MonetaryAmount) Round(scale int) string {
+func (m MonetaryAmount) Round(scale int) string {
 	m.initialize()
 	return new(inf.Dec).Round(m.Dec, inf.Scale(scale), inf.RoundHalfUp).String()
 }
 
-func (m *MonetaryAmount) AssumeScale(scale int) string {
+func (m MonetaryAmount) AssumeScale(scale int) string {
 	m.initialize()
 	return strings.Replace(m.Round(scale), ".", "", 1)
 }
 
-func (m *MonetaryAmount) String() string {
+func (m MonetaryAmount) String() string {
 	m.initialize()
 	return m.Dec.String()
 }
 
-func (m *MonetaryAmount) MarshalText() ([]byte, error) {
+func (m MonetaryAmount) MarshalText() ([]byte, error) {
 	m.initialize()
 	return m.Dec.MarshalText()
 }
 
-func (m *MonetaryAmount) UnmarshalText(data []byte) error {
+func (m MonetaryAmount) UnmarshalText(data []byte) error {
 	m.initialize()
 	return m.Dec.UnmarshalText(data)
 }
