@@ -66,7 +66,7 @@ func (mt *MemTable) Update(id string, o interface{}) error {
 	return nil
 }
 
-func (mt *MemTable) GetAll(date string, limit int, entity interface{}) interface{} {
+func (mt *MemTable) GetAll(date string, limit int, entity interface{}) (interface{}, error) {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
 
@@ -96,7 +96,7 @@ func (mt *MemTable) GetAll(date string, limit int, entity interface{}) interface
 		i++
 	}
 
-	return x.Elem().Interface()
+	return x.Elem().Interface(), nil
 }
 
 func (mt *MemTable) All() interface{} {
@@ -107,7 +107,9 @@ func (mt *MemTable) All() interface{} {
 }
 
 func (mt MemTable) Dump() {
-	log.Println(mt.Table)
+	for k, v := range mt.Table {
+		log.Println(k, v)
+	}
 }
 
 func NewMemTable() *MemTable {
