@@ -13,8 +13,8 @@ const (
 	READ EventCode = "READ"
 	UPDATE EventCode = "UPDATE"
 
-	PERM_LOGIN Permission = "LOGIN"
-	PERM_SUPER_USER Permission = "SUPER_USER" //Has all permissions except LOGIN
+	LOGIN Permission = "LOGIN"
+	SUPER_USER Permission = "SUPER_USER" //Has all permissions except LOGIN
 )
 
 type Session struct {
@@ -48,11 +48,11 @@ func (u *Permissions) HasPermission(perm Permission) bool {
 		}
 
 		//SUPER_USER's can still have their LOGIN permission revoked
-		if perm == PERM_LOGIN {
+		if perm == LOGIN {
 			continue;
 		}
 
-		if p == PERM_SUPER_USER {
+		if p == SUPER_USER {
 			return true
 		}
 	}

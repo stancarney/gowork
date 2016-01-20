@@ -10,7 +10,6 @@ func TestNotFoundError_Error_CustomMessage(t *testing.T) {
 	//setup
 	e := NotFoundError("custom")
 
-
 	//execute
 	str := e.Error()
 

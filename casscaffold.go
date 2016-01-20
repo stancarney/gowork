@@ -106,6 +106,9 @@ func (c *Cassandra) GetById(table string, id string, date string, entity interfa
 		}
 		return nil, nil
 	}).Consistency(consistency).MapScan(result); err != nil {
+		if err.Error() == "not found" { //gocql uses string messages to differentiate errors.
+			return NewNotFoundError()
+		}
 		return
 	}
 
