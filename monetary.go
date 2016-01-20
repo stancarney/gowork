@@ -43,7 +43,3 @@ func MonetaryAmountFromString(value string) (amount MonetaryAmount, err error) {
 
 	return MonetaryAmount{dec}, nil
 }
-
-func MarshalMonetaryAmount(amount MonetaryAmount) *inf.Dec {
-	return amount.Dec
-}

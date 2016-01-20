@@ -57,7 +57,7 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 
 		switch params[i].(type) {
 		case MonetaryAmount:
-			params[i] = MarshalMonetaryAmount(params[i].(MonetaryAmount))
+			params[i] = params[i].(MonetaryAmount).Dec
 		}
 	}
 

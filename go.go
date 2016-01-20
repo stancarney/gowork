@@ -10,16 +10,17 @@ func GetFunctionName(i interface{}) string {
 	if i == nil {
 		return ""
 	}
-	name := runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+	name := runtime.FuncForPC(reflect.Indirect(reflect.ValueOf(i)).Pointer()).Name()
 	segments := strings.Split(name, "/")
 	return segments[len(segments) - 1]
 }
 
 func GetCurrentFunctionName() string {
-	pc := make([]uintptr, 10)  // at least 1 entry needed
+	pc := make([]uintptr, 1)
 	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	return f.Name()
+	name := runtime.FuncForPC(pc[0]).Name()
+	segments := strings.Split(name, "/")
+	return segments[len(segments) - 1]
 }
 
 func GetStructName(i interface{}) string {
