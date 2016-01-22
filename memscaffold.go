@@ -4,7 +4,6 @@ import (
 	"log"
 	"reflect"
 	"sync"
-	"errors"
 )
 
 type MemTable struct {
@@ -17,7 +16,9 @@ func (mt *MemTable) Create(id string, o interface{}) error {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
 
-	mt.Table[id] = o
+	//dereference underlying entity and store a copy as we don't want it being changed behind our back.
+	v := reflect.Indirect(reflect.ValueOf(o))
+	mt.Table[id] = v.Interface()
 
 	return nil
 }
@@ -27,6 +28,7 @@ func (mt *MemTable) Get(id string) (interface{}, error) {
 	defer mt.mutex.Unlock()
 
 	r, e := mt.Table[id]
+
 	if !e {
 		return nil, NewNotFoundError()
 	}
@@ -38,34 +40,18 @@ func (mt *MemTable) Update(id string, o interface{}) error {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
 
-	old, e := mt.Table[id]
-	if !e {
+	if _, e := mt.Table[id]; !e {
 		return NewNotFoundError()
 	}
 
-	oldValue := reflect.Indirect(reflect.ValueOf(old))
-	oldVersion := oldValue.FieldByName("Version")
-	if oldVersion.IsValid() {
-		i := oldVersion.Interface().(int)
-
-		newValue := reflect.Indirect(reflect.ValueOf(o))
-		newVersion := newValue.FieldByName("Version")
-		j := newVersion.Interface().(int)
-
-		if i == j {
-			newVersion.SetInt(int64(i + 1))
-			mt.Table[id] = o
-			return nil
-		}
-
-		return errors.New("Stale Entity. It has been updated in another session! Please reload and try again.")
-	}
-
-	//Record doesn't have the Version field. Update record
-	mt.Table[id] = o
+	//dereference underlying entity and store a copy as we don't want it being changed behind our back.
+	v := reflect.Indirect(reflect.ValueOf(o))
+	mt.Table[id] = v.Interface()
+	
 	return nil
 }
 
+//TODO:Stan date is a project specific item. Should really move it out of here and into the various other projects.
 func (mt *MemTable) GetAll(date string, limit int, entity interface{}) (interface{}, error) {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
