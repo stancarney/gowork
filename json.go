@@ -67,11 +67,11 @@ func WriteErrorToJSON(w http.ResponseWriter, code int, err interface{}) {
 	case reflect.Slice:
 		m := err.([]error)
 		for _, v := range m {
-			FormatError(v, resp)
+			formatError(v, resp)
 		}
 
 	default:
-		FormatError(err, resp)
+		formatError(err, resp)
 	}
 
 	w.WriteHeader(code)
@@ -95,7 +95,7 @@ func JSONResponse(w http.ResponseWriter, data interface{}, err interface{}) {
 	WriteJSON(w, data)
 }
 
-func FormatError(err interface{}, resp *ErrorResponse) {
+func formatError(err interface{}, resp *ErrorResponse) {
 
 	index := 0
 	if e, ok := err.(IndexedError); ok {

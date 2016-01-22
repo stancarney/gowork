@@ -87,36 +87,19 @@ func TestSliceContains_NilSlice(t *testing.T) {
 	require.Equal(t, false, r)
 }
 
-
-
-/*
-func TestSimpleContext_Nil(t *testing.T) {
+func TestStringMapToSlice_Success(t *testing.T) {
 
 	//setup
-	ctx := NewSimpleContext()
+	m := make(map[string]interface{})
+	m["1"] = &Session{Id: "1", Version: 1}
+	m["2"] = &Session{Id: "2", Version: 2}
 
 	//execute
-	r := ctx.Get("Hello")
+	r := StringMapToSlice(m)
 
 	//verify
-	require.Nil(t, r)
+	sessions := r.([]Session)
+	require.Equal(t, 2, len(sessions))
+	require.Equal(t, true, sessions[0].Id == "1" || sessions[1].Id == "1")
+	require.Equal(t, true, sessions[0].Id == "2" || sessions[1].Id == "2")
 }
-
-func TestGetContext_Success(t *testing.T) {
-
-	//setup
-	u, _ := url.ParseRequestURI("http://localhost")
-	request := &http.Request{URL: u}
-
-	ctx := NewSimpleRequestContext(request)
-	context.Set(request, ReqCtx, ctx)
-
-	//execute
-	r := GetContext(request)
-
-	//verify
-	require.NotNil(t, r)
-	src := r.(*SimpleRequestContext)
-	require.Equal(t, src.Request, request)
-}
-*/

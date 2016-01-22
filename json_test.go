@@ -130,6 +130,23 @@ func TestWriteErrorToJSON_String(t *testing.T) {
 	require.Equal(t, FormatJSON("{\"errors\":[{\"msg\":\"My Error\"}],\"count\":1}"), w.Body.String())
 }
 
+func TestWriteErrorToJSON_Slice(t *testing.T) {
+
+	//setup
+	w := httptest.NewRecorder()
+
+	errors := []error{errors.New("one"), errors.New("two")}
+
+	//execute
+	WriteErrorToJSON(w, 500, errors)
+
+	//verify
+	require.Equal(t, 500, w.Code)
+	require.Equal(t, 1, len(w.HeaderMap))
+	require.Equal(t, "application/json", w.HeaderMap["Content-Type"][0])
+	require.Equal(t, FormatJSON("{\"errors\":[{\"msg\":\"one\"},{\"msg\":\"two\"}],\"count\":2}"), w.Body.String())
+}
+
 func TestJSONResponse_NoError(t *testing.T) {
 
 	//setup

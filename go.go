@@ -35,8 +35,8 @@ func GetStringValue(i interface{}, fieldName string) string {
 		return ""
 	}
 
-	if reflect.TypeOf(i).Kind() == reflect.String {
-		return i.(string)
+	if s, ok := i.(string); ok {
+		return s
 	}
 
 	return reflect.Indirect(reflect.ValueOf(i)).FieldByName(fieldName).Interface().(string)
