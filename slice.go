@@ -28,8 +28,8 @@ func StringMapToSlice(m map[string]interface{}) interface{} {
 
 	i := 0
 	for _, v := range m {
-		val := reflect.Indirect(reflect.ValueOf(v))
 		if !r.IsValid() {
+			val := reflect.Indirect(reflect.ValueOf(v))
 			r = reflect.MakeSlice(reflect.SliceOf(val.Type()), len(m), len(m))
 		}
 		r.Index(i).Set(val)
