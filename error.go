@@ -2,6 +2,7 @@ package gowork
 
 const (
 	STALE_ENTITY_MSG = "Stale Entity. It has been updated in another session! Please reload and try again."
+	CANNOT_BE_ZERO_VALUE = "value cannot be 'zero' value"
 )
 
 type NotFoundError string
