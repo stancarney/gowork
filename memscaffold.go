@@ -1,9 +1,9 @@
 package gowork
 
 import (
-	"log"
 	"reflect"
 	"sync"
+	"fmt"
 )
 
 type MemTable struct {
@@ -47,7 +47,7 @@ func (mt *MemTable) Update(id string, o interface{}) error {
 	//dereference underlying entity and store a copy as we don't want it being changed behind our back.
 	v := reflect.Indirect(reflect.ValueOf(o))
 	mt.Table[id] = v.Interface()
-	
+
 	return nil
 }
 
@@ -94,7 +94,7 @@ func (mt *MemTable) All() interface{} {
 
 func (mt MemTable) Dump() {
 	for k, v := range mt.Table {
-		log.Println(k, v)
+		fmt.Printf("\n%s: %s\n", k, v)
 	}
 }
 

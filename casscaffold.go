@@ -69,7 +69,7 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 	qs := qbuf.String()
 
 	if c.Debug {
-		log.Printf("\nStatement:  %s\nParameters: %s\n\n", qs, params)
+		log.Printf("%s; %s\n", qs, params)
 	}
 
 	return qs, params
@@ -80,6 +80,10 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 func (c *Cassandra) Insert(table string, entity interface{}, overrides map[string]interface{}, consistency gocql.Consistency) (err error) {
 
 	qs, params := c.BuildInsertStatement(table, entity, overrides)
+
+	if c.Debug {
+		log.Printf("%s; %s\n", qs, params)
+	}
 
 	err = c.Session.Bind(qs, func(q *gocql.QueryInfo) ([]interface{}, error) {
 		return params, nil
@@ -97,14 +101,20 @@ func (c *Cassandra) GetById(table string, id string, date string, entity interfa
 		buf.WriteString(" and date = ?")
 	}
 
+	var params []interface{}
+	if date != "" {
+		params = []interface{}{id, date}
+	} else {
+		params = []interface{}{id}
+	}
+
+	if c.Debug {
+		log.Printf("%s; %s\n", buf.String(), params)
+	}
+
 	result := make(map[string]interface{})
 	if err = c.Session.Bind(buf.String(), func(q *gocql.QueryInfo) ([]interface{}, error) {
-		if date != "" {
-			return []interface{}{id, date}, nil
-		} else {
-			return []interface{}{id}, nil
-		}
-		return nil, nil
+		return params, nil
 	}).Consistency(consistency).MapScan(result); err != nil {
 		if err.Error() == "not found" { //gocql uses string messages to differentiate errors.
 			return NewNotFoundError()
@@ -132,11 +142,17 @@ func (c *Cassandra) GetAll(table string, limit int, date string, entity interfac
 		buf.WriteString(strconv.Itoa(limit))
 	}
 
+	var params []interface{}
+	if date != "" {
+		params = []interface{}{date}
+	}
+
+	if c.Debug {
+		log.Printf("%s; %s\n", buf.String(), params)
+	}
+
 	iter := c.Session.Bind(buf.String(), func(q *gocql.QueryInfo) ([]interface{}, error) {
-		if date != "" {
-			return []interface{}{date}, nil
-		}
-		return nil, nil
+		return params, nil
 	}).Consistency(consistency).Iter()
 
 	result, err := iter.SliceMap()

@@ -2,6 +2,7 @@ package gowork
 
 import (
 	"reflect"
+	"fmt"
 )
 
 func SliceContains(slice interface{}, v interface{}) bool {
@@ -41,4 +42,19 @@ func StringMapToSlice(m map[string]interface{}) interface{} {
 	}
 
 	return r.Interface()
+}
+
+// DumpSlice is used to dump the contents of a slice out to std out and is useful in testing.
+func DumpSlice(slice interface{}) {
+	t := reflect.TypeOf(slice)
+	switch t.Kind() {
+	case reflect.Slice:
+		fmt.Printf("\nType: %s\n", t)
+		s := reflect.ValueOf(slice)
+		for i := 0; i < s.Len(); i++ {
+			fmt.Printf("%d: %s\n", i, s.Index(i))
+		}
+	default:
+		panic(fmt.Sprintf("not a slice, %s", t))
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"log"
 )
 
 var offset time.Duration = 0
@@ -15,12 +16,14 @@ func ClearOffset() {
 // SetOffset is only used for testing. It is used when you want to move the state of the application ahead of forward by the provided duration
 // in order to test time sensitive code. Jobs, etc...
 func SetOffset(val time.Duration) {
+	log.Printf("WARNING: SetOffset %s", val)
 	offset = val
 }
 
 // SetOffsetTime is only used for testing. It is used when you want to move the state of the application ahead of forward by the provided duration
 // in order to test time sensitive code. Jobs, etc...
 func SetOffsetTime(date time.Time) {
+	log.Printf("WARNING: SetOffsetTime %s", date)
 	offset = time.Since(date)
 }
 

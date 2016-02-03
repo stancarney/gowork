@@ -11,10 +11,14 @@ type MonetaryAmount struct {
 	*inf.Dec
 }
 
-var Zero = MonetaryAmount{inf.NewDec(0, 0)}
+var Zero = MonetaryAmount{inf.NewDec(0, 2)}
 
 func (m MonetaryAmount) Add(ma MonetaryAmount) MonetaryAmount {
 	return MonetaryAmount{new(inf.Dec).Add(m.Dec, ma.Dec)}
+}
+
+func (m MonetaryAmount) Multiply(i *inf.Dec) MonetaryAmount {
+	return MonetaryAmount{new(inf.Dec).Mul(m.Dec, i)}
 }
 
 func (m MonetaryAmount) Neg() MonetaryAmount {
@@ -29,9 +33,17 @@ func (m MonetaryAmount) AssumeScale(scale int) string {
 	return strings.Replace(m.Round(scale), ".", "", 1)
 }
 
+func (m MonetaryAmount) Cmp(ma MonetaryAmount) int {
+	return m.Dec.Cmp(ma.Dec)
+}
+
+func (m MonetaryAmount) IsZero() bool {
+	return m.Cmp(Zero) == 0
+}
+
 //UnmarshalText mutates the current MonetaryAmount instance with the provided byte array. 
 func (m *MonetaryAmount) UnmarshalText(data []byte) error {
-	m.Dec = new(inf.Dec) 
+	m.Dec = new(inf.Dec)
 	return m.Dec.UnmarshalText(data)
 }
 
