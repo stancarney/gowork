@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"sync"
 	"fmt"
+	"time"
 )
 
 type MemTable struct {
@@ -52,7 +53,7 @@ func (mt *MemTable) Update(id string, o interface{}) error {
 }
 
 //TODO:Stan date is a project specific item. Should really move it out of here and into the various other projects.
-func (mt *MemTable) GetAll(date string, limit int, entity interface{}) (interface{}, error) {
+func (mt *MemTable) GetAll(date time.Time, limit int, entity interface{}) (interface{}, error) {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
 
@@ -67,10 +68,10 @@ func (mt *MemTable) GetAll(date string, limit int, entity interface{}) (interfac
 	i := 0
 	for _, v := range mt.Table {
 		value := reflect.Indirect(reflect.ValueOf(v))
-		if date != "" {
+		if !date.IsZero() {
 			dv := value.FieldByName("Date")
 			if dv.IsValid() {
-				t := dv.Interface().(string)
+				t := dv.Interface().(time.Time)
 				if t != date {
 					continue
 				}

@@ -8,6 +8,7 @@ import (
 	"log"
 	"fmt"
 	"strconv"
+	"time"
 )
 
 const (
@@ -93,16 +94,15 @@ func (c *Cassandra) Insert(table string, entity interface{}, overrides map[strin
 }
 
 // GetById is a utility function used to simplify loading an entity from the datastore by Id. Date is optional and is only used by tables that have a date string partition key.
-func (c *Cassandra) GetById(table string, id string, date string, entity interface{}, consistency gocql.Consistency) (err error) {
-
-	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("SELECT * FROM %s WHERE id = ?", table))
-	if date != "" {
-		buf.WriteString(" and date = ?")
-	}
+func (c *Cassandra) GetById(table string, id string, date time.Time, entity interface{}, consistency gocql.Consistency) (err error) {
 
 	var params []interface{}
-	if date != "" {
+	
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("SELECT * FROM %s WHERE id = ?", table))
+
+	if !date.IsZero() {
+		buf.WriteString(" and date = ?")
 		params = []interface{}{id, date}
 	} else {
 		params = []interface{}{id}
@@ -127,24 +127,22 @@ func (c *Cassandra) GetById(table string, id string, date string, entity interfa
 	return
 }
 
-func (c *Cassandra) GetAll(table string, limit int, date string, entity interface{}, consistency gocql.Consistency) (entities interface{}, err error) {
+func (c *Cassandra) GetAll(table string, limit int, date time.Time, entity interface{}, consistency gocql.Consistency) (entities interface{}, err error) {
 
+	var params []interface{}
+	
 	var buf bytes.Buffer
 	buf.WriteString("SELECT * FROM ")
 	buf.WriteString(table)
 
-	if date != "" {
+	if !date.IsZero() {
 		buf.WriteString(" WHERE date = ? ")
+		params = []interface{}{date}
 	}
 
 	if limit > 0 {
 		buf.WriteString(" LIMIT ")
 		buf.WriteString(strconv.Itoa(limit))
-	}
-
-	var params []interface{}
-	if date != "" {
-		params = []interface{}{date}
 	}
 
 	if c.Debug {
@@ -175,4 +173,3 @@ func (c *Cassandra) GetAll(table string, limit int, date string, entity interfac
 	err = iter.Close()
 	return
 }
-

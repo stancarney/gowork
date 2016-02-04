@@ -62,19 +62,6 @@ func TestCurrentTime_Success(t *testing.T) {
 	require.Equal(t, time.Now().Location(), r.Location())
 }
 
-func TestMarshalDate_Success(t *testing.T) {
-
-	//setup
-	date := CurrentTime()
-
-	//execute
-	r := MarshalDate(date)
-
-	//verify
-	require.NotNil(t, r)
-	require.Equal(t, date.Format("2006-01-02"), r)
-}
-
 func TestUnMarshalDate_Success(t *testing.T) {
 
 	//setup
