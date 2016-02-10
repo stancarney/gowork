@@ -18,10 +18,10 @@ const (
 type unmarshaler func(entityMap map[string]interface{}, entity interface{})
 
 type Cassandra struct {
-	Session       *gocql.Session
-	Debug         bool
-	Unmarshaler   unmarshaler
-	PartitionTime string //TODO:Stan it is unlikely that all tables will have the same partition interval (i.e. date, hour, etc..). Look at a way to expand/replace this.
+	Session     *gocql.Session
+	Debug       bool
+	Unmarshaler unmarshaler
+	Partition   string //TODO:Stan it is unlikely that all tables will have the same partition interval (i.e. date, hour, etc..). Look at a way to expand/replace this.
 }
 
 func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overrides map[string]interface{}) (string, []interface{}) {
@@ -63,9 +63,9 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 		}
 	}
 
-	o, ok := overrides[c.PartitionTime]
+	o, ok := overrides[c.Partition]
 	if ok {
-		qbuf.WriteString("," + c.PartitionTime)
+		qbuf.WriteString("," + c.Partition)
 		qmbuf.WriteString(",?")
 		params = append(params, o)
 	}
@@ -101,17 +101,17 @@ func (c *Cassandra) Insert(table string, entity interface{}, overrides map[strin
 	return
 }
 
-// GetById is a utility function used to simplify loading an entity from the datastore by Id. Partition Time is optional and is only used by tables that have a partitionTime string partition key.
-func (c *Cassandra) GetById(table string, id string, partitionTime time.Time, entity interface{}, consistency gocql.Consistency) (err error) {
+// GetById is a utility function used to simplify loading an entity from the datastore by Id. Partition Time is optional and is only used by tables that have a partition string partition key.
+func (c *Cassandra) GetById(table string, id string, partition time.Time, entity interface{}, consistency gocql.Consistency) (err error) {
 
 	var params []interface{}
 
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("SELECT * FROM %s WHERE id = ?", table))
 
-	if !partitionTime.IsZero() {
-		buf.WriteString(" and " + c.PartitionTime + " = ?")
-		params = []interface{}{id, partitionTime}
+	if !partition.IsZero() {
+		buf.WriteString(" and " + c.Partition + " = ?")
+		params = []interface{}{id, partition}
 	} else {
 		params = []interface{}{id}
 	}
@@ -135,7 +135,7 @@ func (c *Cassandra) GetById(table string, id string, partitionTime time.Time, en
 	return
 }
 
-func (c *Cassandra) GetAll(table string, limit int, partitionTime time.Time, entity interface{}, consistency gocql.Consistency) (entities interface{}, err error) {
+func (c *Cassandra) GetAll(table string, limit int, partition time.Time, entity interface{}, consistency gocql.Consistency) (entities interface{}, err error) {
 
 	var params []interface{}
 
@@ -143,9 +143,9 @@ func (c *Cassandra) GetAll(table string, limit int, partitionTime time.Time, ent
 	buf.WriteString("SELECT * FROM ")
 	buf.WriteString(table)
 
-	if !partitionTime.IsZero() {
-		buf.WriteString(" WHERE " + c.PartitionTime + " = ? ")
-		params = []interface{}{partitionTime}
+	if !partition.IsZero() {
+		buf.WriteString(" WHERE " + c.Partition + " = ? ")
+		params = []interface{}{partition}
 	}
 
 	if limit > 0 {
