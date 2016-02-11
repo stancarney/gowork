@@ -58,6 +58,10 @@ func FromJulianDate(str string) time.Time {
 	return date.AddDate(0, 0, days)
 }
 
+func MarshalDate(t time.Time) string {
+	return t.Format("2006-01-02 15:04:05-0700")
+}
+
 func UnMarshalDate(datestr string) (time.Time, error) {
-	return time.ParseInLocation("2006-01-02", datestr, time.Local)
+	return time.ParseInLocation("2006-01-02 15:04:05-0700", datestr, time.Local)
 }
