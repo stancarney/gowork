@@ -68,7 +68,7 @@ func TestUnMarshalDate_Success(t *testing.T) {
 	date := CurrentTime()
 
 	//execute
-	r, err := UnMarshalDate(date.Format("2006-01-02"))
+	r, err := UnMarshalDate(date.Format("2006-01-02 00:00:00-0700"))
 
 	//verify
 	require.Nil(t, err)

@@ -15,9 +15,9 @@ func GetFunctionName(i interface{}) string {
 	return segments[len(segments) - 1]
 }
 
-func GetCurrentFunctionName() string {
+func GetCurrentFunctionName(stack int) string {
 	pc := make([]uintptr, 1)
-	runtime.Callers(2, pc)
+	runtime.Callers(stack, pc)
 	name := runtime.FuncForPC(pc[0]).Name()
 	segments := strings.Split(name, "/")
 	return segments[len(segments) - 1]

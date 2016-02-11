@@ -90,10 +90,6 @@ func (c *Cassandra) Insert(table string, entity interface{}, overrides map[strin
 
 	qs, params := c.BuildInsertStatement(table, entity, overrides)
 
-	if c.Debug {
-		log.Printf("%s; %s\n", qs, params)
-	}
-
 	err = c.Session.Bind(qs, func(q *gocql.QueryInfo) ([]interface{}, error) {
 		return params, nil
 	}).Consistency(consistency).Exec()

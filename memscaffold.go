@@ -5,17 +5,23 @@ import (
 	"sync"
 	"fmt"
 	"time"
+	"log"
 )
 
 type MemTable struct {
 	Table map[string]interface{}
 	mutex *sync.Mutex
+	Debug bool
 }
 
 // Create makes a new table entry with the provided id. An error is never returned from this function and is intended for use in overriding functions.
 func (mt *MemTable) Create(id string, o interface{}) error {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
+
+	if mt.Debug {
+		log.Printf("%s: %s; %s\n", GetCurrentFunctionName(4), id, o)
+	}
 
 	//dereference underlying entity and store a copy as we don't want it being changed behind our back.
 	v := reflect.Indirect(reflect.ValueOf(o))
@@ -27,6 +33,10 @@ func (mt *MemTable) Create(id string, o interface{}) error {
 func (mt *MemTable) Get(id string) (interface{}, error) {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
+
+	if mt.Debug {
+		log.Printf("%s: %s\n", GetCurrentFunctionName(4), id)
+	}
 
 	r, e := mt.Table[id]
 
@@ -40,6 +50,10 @@ func (mt *MemTable) Get(id string) (interface{}, error) {
 func (mt *MemTable) Update(id string, o interface{}) error {
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
+
+	if mt.Debug {
+		log.Printf("%s: %s; %s\n", GetCurrentFunctionName(4), id, o)
+	}
 
 	if _, e := mt.Table[id]; !e {
 		return NewNotFoundError()
@@ -57,6 +71,10 @@ func (mt *MemTable) GetAll(date time.Time, limit int, entity interface{}) (inter
 	mt.mutex.Lock()
 	defer mt.mutex.Unlock()
 
+	if mt.Debug {
+		log.Printf("%s: time: %s, limit: %d\n", GetCurrentFunctionName(4), date, limit)
+	}
+
 	//Create slice
 	ev := reflect.Indirect(reflect.ValueOf(entity))
 	slice := reflect.MakeSlice(reflect.SliceOf(ev.Type()), 0, len(mt.Table))
@@ -69,10 +87,17 @@ func (mt *MemTable) GetAll(date time.Time, limit int, entity interface{}) (inter
 	for _, v := range mt.Table {
 		value := reflect.Indirect(reflect.ValueOf(v))
 		if !date.IsZero() {
-			dv := value.FieldByName("Date")
+
+			//Create ptr to value as all stored entities should be values not ptrs. If they weren't we made them values with reflect.Indirect above.
+			ptr := reflect.New(reflect.TypeOf(v))
+			temp := ptr.Elem()
+			temp.Set(value)
+
+			dv := temp.Addr().MethodByName("GetDate") //TODO:Stan GetDate still leaks the cassandra partition information in. Look at resolving this when I have nothing better to do.
 			if dv.IsValid() {
-				t := dv.Interface().(time.Time)
-				if t != date {
+				fn := dv.Call([]reflect.Value{})
+				t := fn[0].Interface().(time.Time)
+				if !t.Equal(date) {
 					continue
 				}
 			}

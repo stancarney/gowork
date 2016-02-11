@@ -48,7 +48,7 @@ func TestGetCurrentFunctionName_Success(t *testing.T) {
 	//setup
 
 	//execute
-	r := GetCurrentFunctionName()
+	r := GetCurrentFunctionName(2)
 
 	//verify
 	require.Equal(t, "gowork.TestGetCurrentFunctionName_Success", r)
