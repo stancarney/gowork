@@ -25,14 +25,7 @@ func GetDate(r *http.Request) time.Time {
 	date := vals.Get("date")
 
 	if dt, err := time.Parse("2006-01-02T15:04:05-07:00", date); err == nil {
-		local := dt.Local()
-		
-		// If somebody requests a given date in their TZ we don't want to roll the date ahead of forward to align it with the system TZ.
-		if dt.Day() != local.Day() {
-			local = local.AddDate(0, 0, dt.Day() - local.Day())
-		}
-
-		return FloorDay(local)
+		return FloorDay(dt.Local())
 	} else {
 		log.Printf("Could not parse date %s (%s)\n", err, GetCurrentFunctionName(3))
 	}

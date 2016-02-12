@@ -11,7 +11,7 @@ import (
 func TestGetLimit_Valid(t *testing.T) {
 
 	//setup
-	u, _ := url.ParseRequestURI("http://localhost?num=10")
+	u, _ := url.ParseRequestURI("http://rcalhost?num=10")
 	request := http.Request{URL: u}
 
 	//execute
@@ -69,36 +69,6 @@ func TestGetDate_Valid_ISO8061(t *testing.T) {
 	request := http.Request{URL: u}
 
 	date, _ := time.ParseInLocation("2006-01-02", "2015-01-01", time.Local)
-
-	//execute
-	r := GetDate(&request)
-
-	//verify
-	require.Equal(t, FloorDay(date), r)
-}
-
-func TestGetDate_Valid_ISO8061_Different_TZ(t *testing.T) {
-
-	//setup
-	u, _ := url.ParseRequestURI("http://localhost?date=2015-12-30T00:00:00-05:00") // EST
-	request := http.Request{URL: u}
-	
-	date, _ := time.ParseInLocation("2006-01-02T15:04:05", "2015-12-30T00:00:00", time.Local) //This allows for this test to be run on desktops with different TZ's.
-
-	//execute
-	r := GetDate(&request)
-
-	//verify
-	require.Equal(t, FloorDay(date), r)
-}
-
-func TestGetDate_Valid_ISO8061_Different_Day_TZ(t *testing.T) {
-
-	//setup
-	u, _ := url.ParseRequestURI("http://localhost?date=2015-12-30T00:00:00%2B14:00") // Kiribati TZ
-	request := http.Request{URL: u}
-
-	date, _ := time.ParseInLocation("2006-01-02T15:04:05", "2015-12-30T00:00:00", time.Local) //This allows for this test to be run on desktops with different TZ's.
 
 	//execute
 	r := GetDate(&request)
