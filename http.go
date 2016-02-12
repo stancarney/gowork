@@ -24,17 +24,10 @@ func GetDate(r *http.Request) time.Time {
 	vals := r.URL.Query()
 	date := vals.Get("date")
 
-	if dt, err := time.Parse("2006-01-02T15:04:05-07:00", date); err == nil {
+	if dt, err := UnMarshalDate(date); err == nil {
 		return FloorDay(dt.Local())
 	} else {
-		log.Printf("Could not parse date %s (%s)\n", err, GetCurrentFunctionName(3))
-	}
-
-	// Default timeless dates to Local.
-	if dt, err := time.ParseInLocation("2006-01-02", date, time.Local); err == nil {
-		return FloorDay(dt)
-	} else {
-		log.Printf("Could not parse date %s (%s)\n", err, GetCurrentFunctionName(3))
+		log.Printf("Could not parse date: %s (%s)\n", err, GetCurrentFunctionName(3))
 	}
 
 	return FloorDay(CurrentTime())
