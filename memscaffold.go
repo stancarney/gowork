@@ -20,7 +20,7 @@ func (mt *MemTable) Create(id string, o interface{}) error {
 	defer mt.mutex.Unlock()
 
 	if mt.Debug {
-		log.Printf("%s: %s; %s\n", GetCurrentFunctionName(4), id, o)
+		log.Printf("%s: %s; %s\n", CurrentFunctionName(4), id, o)
 	}
 
 	//dereference underlying entity and store a copy as we don't want it being changed behind our back.
@@ -35,7 +35,7 @@ func (mt *MemTable) Get(id string) (interface{}, error) {
 	defer mt.mutex.Unlock()
 
 	if mt.Debug {
-		log.Printf("%s: %s\n", GetCurrentFunctionName(4), id)
+		log.Printf("%s: %s\n", CurrentFunctionName(4), id)
 	}
 
 	r, e := mt.Table[id]
@@ -52,7 +52,7 @@ func (mt *MemTable) Update(id string, o interface{}) error {
 	defer mt.mutex.Unlock()
 
 	if mt.Debug {
-		log.Printf("%s: %s; %s\n", GetCurrentFunctionName(4), id, o)
+		log.Printf("%s: %s; %s\n", CurrentFunctionName(4), id, o)
 	}
 
 	if _, e := mt.Table[id]; !e {
@@ -72,7 +72,7 @@ func (mt *MemTable) GetAll(date time.Time, limit int, entity interface{}) (inter
 	defer mt.mutex.Unlock()
 
 	if mt.Debug {
-		log.Printf("%s: time: %s, limit: %d\n", GetCurrentFunctionName(4), date, limit)
+		log.Printf("%s: time: %s, limit: %d\n", CurrentFunctionName(4), date, limit)
 	}
 
 	//Create slice

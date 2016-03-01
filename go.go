@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetFunctionName(i interface{}) string {
+func FunctionName(i interface{}) string {
 	if i == nil {
 		return ""
 	}
@@ -15,7 +15,7 @@ func GetFunctionName(i interface{}) string {
 	return segments[len(segments) - 1]
 }
 
-func GetCurrentFunctionName(stack int) string {
+func CurrentFunctionName(stack int) string {
 	pc := make([]uintptr, 1)
 	runtime.Callers(stack, pc)
 	name := runtime.FuncForPC(pc[0]).Name()
@@ -23,14 +23,14 @@ func GetCurrentFunctionName(stack int) string {
 	return segments[len(segments) - 1]
 }
 
-func GetStructName(i interface{}) string {
+func StructName(i interface{}) string {
 	if i == nil {
 		return ""
 	}
 	return reflect.Indirect(reflect.ValueOf(i)).Type().String()
 }
 
-func GetStringValue(i interface{}, fieldName string) string {
+func StringValue(i interface{}, fieldName string) string {
 	if i == nil {
 		return ""
 	}

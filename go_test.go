@@ -12,7 +12,7 @@ func TestGetFunctionName_Success(t *testing.T) {
 
 
 	//execute
-	r := GetFunctionName(f)
+	r := FunctionName(f)
 
 	//verify
 	require.Equal(t, "gowork.TestGetFunctionName_Success", r)
@@ -25,7 +25,7 @@ func TestGetFunctionName_Pointer(t *testing.T) {
 
 
 	//execute
-	r := GetFunctionName(&f)
+	r := FunctionName(&f)
 
 	//verify
 	require.Equal(t, "gowork.TestGetFunctionName_Success", r)
@@ -37,7 +37,7 @@ func TestGetFunctionName_Nil(t *testing.T) {
 
 
 	//execute
-	r := GetFunctionName(nil)
+	r := FunctionName(nil)
 
 	//verify
 	require.Equal(t, "", r)
@@ -48,7 +48,7 @@ func TestGetCurrentFunctionName_Success(t *testing.T) {
 	//setup
 
 	//execute
-	r := GetCurrentFunctionName(2)
+	r := CurrentFunctionName(2)
 
 	//verify
 	require.Equal(t, "gowork.TestGetCurrentFunctionName_Success", r)
@@ -61,7 +61,7 @@ func TestGetStructName_Success(t *testing.T) {
 	s := blah{}
 
 	//execute
-	r := GetStructName(s)
+	r := StructName(s)
 
 	//verify
 	require.Equal(t, "gowork.blah", r)
@@ -74,7 +74,7 @@ func TestGetStructName_Pointer(t *testing.T) {
 	s := blah{}
 
 	//execute
-	r := GetStructName(&s)
+	r := StructName(&s)
 
 	//verify
 	require.Equal(t, "gowork.blah", r)
@@ -85,7 +85,7 @@ func TestGetStructName_Nil(t *testing.T) {
 	//setup
 
 	//execute
-	r := GetStructName(nil)
+	r := StructName(nil)
 
 	//verify
 	require.Equal(t, "", r)
@@ -100,7 +100,7 @@ func TestGetStringValue_Success(t *testing.T) {
 	s := blah{"foo"}
 
 	//execute
-	r := GetStringValue(s, "Value")
+	r := StringValue(s, "Value")
 
 	//verify
 	require.Equal(t, "foo", r)
@@ -115,7 +115,7 @@ func TestGetStringValue_Pointer(t *testing.T) {
 	s := blah{"foo"}
 
 	//execute
-	r := GetStringValue(&s, "Value")
+	r := StringValue(&s, "Value")
 
 	//verify
 	require.Equal(t, "foo", r)
@@ -126,7 +126,7 @@ func TestGetStringValue_Nil(t *testing.T) {
 	//setup
 
 	//execute
-	r := GetStringValue(nil, "Value")
+	r := StringValue(nil, "Value")
 
 	//verify
 	require.Equal(t, "", r)
