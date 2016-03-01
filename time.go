@@ -63,5 +63,26 @@ func MarshalDate(t time.Time) string {
 }
 
 func UnMarshalDate(datestr string) (time.Time, error) {
-	return time.ParseInLocation("2006-01-02 15:04:05-0700", datestr, time.Local)
+
+	// JavaScript toISOString() format
+	if dt, err := time.Parse("2006-01-02T15:04:05-07:00", datestr); err == nil {
+		return dt.Local(), nil
+	}
+
+	// Another ISO8061 format
+	if dt, err := time.Parse("2006-01-02 15:04:05-0700", datestr); err == nil {
+		return dt.Local(), nil
+	}
+
+	// Another ISO8061 format without TZ
+	if dt, err := time.ParseInLocation("2006-01-02 15:04:05", datestr, time.Local); err == nil {
+		return dt, nil
+	}
+
+	// Default timeless dates to Local.
+	if dt, err := time.ParseInLocation("2006-01-02", datestr, time.Local); err == nil {
+		return dt, nil
+	}
+
+	return time.Time{}, fmt.Errorf("Could not parse datestr: %s (%s)", datestr, GetCurrentFunctionName(3))
 }
