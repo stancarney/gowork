@@ -84,5 +84,5 @@ func UnMarshalDate(datestr string) (time.Time, error) {
 		return dt, nil
 	}
 
-	return time.Time{}, fmt.Errorf("Could not parse datestr: %s (%s)", datestr, GetCurrentFunctionName(3))
+	return time.Time{}, fmt.Errorf("Could not parse datestr: %s (%s)", datestr, CurrentFunctionName(3))
 }
