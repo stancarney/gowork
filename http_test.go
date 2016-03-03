@@ -15,7 +15,7 @@ func TestGetLimit_Valid(t *testing.T) {
 	request := http.Request{URL: u}
 
 	//execute
-	r := GetLimit(&request)
+	r := Limit(&request)
 
 	//verify
 	require.Equal(t, 10, r)
@@ -28,7 +28,7 @@ func TestGetLimit_Nothing(t *testing.T) {
 	request := http.Request{URL: u}
 
 	//execute
-	r := GetLimit(&request)
+	r := Limit(&request)
 
 	//verify
 	require.Equal(t, 0, r)
@@ -41,7 +41,7 @@ func TestGetLimit_Invalid(t *testing.T) {
 	request := http.Request{URL: u}
 
 	//execute
-	r := GetLimit(&request)
+	r := Limit(&request)
 
 	//verify
 	require.Equal(t, 0, r)
@@ -56,7 +56,7 @@ func TestGetDate_Valid_DateOnly(t *testing.T) {
 	date, _ := time.ParseInLocation("2006-01-02", "2015-01-01", time.Local)
 
 	//execute
-	r := GetDate(&request)
+	r := Date(&request)
 
 	//verify
 	require.Equal(t, FloorDay(date), r)
@@ -71,7 +71,7 @@ func TestGetDate_Valid_ISO8061(t *testing.T) {
 	date, _ := time.ParseInLocation("2006-01-02", "2015-01-01", time.Local)
 
 	//execute
-	r := GetDate(&request)
+	r := Date(&request)
 
 	//verify
 	require.Equal(t, FloorDay(date), r)
@@ -84,7 +84,7 @@ func TestGetDate_Nothing(t *testing.T) {
 	request := http.Request{URL: u}
 
 	//execute
-	r := GetDate(&request)
+	r := Date(&request)
 
 	//verify
 	require.Equal(t, FloorDay(CurrentTime()), r)

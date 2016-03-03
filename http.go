@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func GetLimit(r *http.Request) (limit int) {
+func Limit(r *http.Request) (limit int) {
 	vals := r.URL.Query()
 	num := vals.Get("num")
 	if num != "" {
@@ -20,7 +20,7 @@ func GetLimit(r *http.Request) (limit int) {
 	return 0
 }
 
-func GetDate(r *http.Request) time.Time {
+func Date(r *http.Request) time.Time {
 	vals := r.URL.Query()
 	date := vals.Get("date")
 

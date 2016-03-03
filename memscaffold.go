@@ -93,7 +93,7 @@ func (mt *MemTable) GetAll(date time.Time, limit int, entity interface{}) (inter
 			temp := ptr.Elem()
 			temp.Set(value)
 
-			dv := temp.Addr().MethodByName("GetDate") //TODO:Stan GetDate still leaks the cassandra partition information in. Look at resolving this when I have nothing better to do.
+			dv := temp.Addr().MethodByName("Date") //TODO:Stan Date still leaks the cassandra partition information in. Look at resolving this when I have nothing better to do.
 			if dv.IsValid() {
 				fn := dv.Call([]reflect.Value{})
 				t := fn[0].Interface().(time.Time)
