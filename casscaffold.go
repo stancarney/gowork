@@ -30,7 +30,7 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 	var qmbuf bytes.Buffer
 	qbuf.WriteString("INSERT INTO ")
 	qbuf.WriteString(table)
-	qbuf.WriteString(" (") 
+	qbuf.WriteString(" (")
 	val := reflect.Indirect(reflect.ValueOf(entity))
 	params := make([]interface{}, val.NumField())
 
@@ -84,17 +84,94 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 	return qs, params
 }
 
+func (c *Cassandra) BuildUpdateStatement(table string, entity interface{}, overrides map[string]interface{}) (string, []interface{}) {
+
+	var qbuf bytes.Buffer
+	//var qmbuf bytes.Buffer
+	qbuf.WriteString("UPDATE ")
+	qbuf.WriteString(table)
+	qbuf.WriteString(" SET ")
+
+	val := reflect.Indirect(reflect.ValueOf(entity))
+	params := make([]interface{}, val.NumField())
+
+	var id interface{}
+
+	for i := 0; i < val.NumField(); i++ {
+		valueField := val.Field(i)
+		typeField := val.Type().Field(i)
+		tag := typeField.Tag.Get("datastore")
+		if tag == "" {
+			tag = strings.ToLower(typeField.Name)
+		}
+
+		if tag == "id" { //TODO: Stan look at pulling the hardcoded id out and having it set as a configuration parameter
+			id = valueField.Interface()
+			continue
+		}
+
+		qbuf.WriteString(tag)
+		qbuf.WriteString(" = ?")
+		if i + 1 < val.NumField() {
+			qbuf.WriteString(", ")
+		}
+
+		o, ok := overrides[tag]
+		if ok {
+			params[i] = o
+		} else {
+			params[i] = valueField.Interface()
+		}
+		delete(overrides, tag)
+
+		switch params[i].(type) {
+		case MonetaryAmount:
+			params[i] = params[i].(MonetaryAmount).Dec
+		}
+	}
+
+	params = append(params, id)
+	qbuf.WriteString(" WHERE id = ?")
+
+	o, ok := overrides[c.Partition]
+	if ok {
+		qbuf.WriteString(" AND ")
+		qbuf.WriteString(c.Partition)
+		qbuf.WriteString(" = ?")
+		//qmbuf.WriteString(",?")
+		params = append(params, o)
+	}
+
+	qs := qbuf.String()
+
+	if c.Debug {
+		log.Printf("%s; %s\n", qs, params)
+	}
+
+	return qs, params
+}
+
 //Builds a CQL INSERT INTO statement with the provided information and executes it.
 //Overrides is a map keyed on the datastore tag that allows different values to be specified than the value provided in entity.
-func (c *Cassandra) Insert(table string, entity interface{}, overrides map[string]interface{}, consistency gocql.Consistency) (err error) {
+func (c *Cassandra) Insert(table string, entity interface{}, overrides map[string]interface{}, consistency gocql.Consistency) error {
 
 	qs, params := c.BuildInsertStatement(table, entity, overrides)
 
-	err = c.Session.Bind(qs, func(q *gocql.QueryInfo) ([]interface{}, error) {
+	return c.Session.Bind(qs, func(q *gocql.QueryInfo) ([]interface{}, error) {
 		return params, nil
 	}).Consistency(consistency).Exec()
+}
 
-	return
+//TODO: Modify this to work with CAS tables.
+//Builds a CQL UPDATE statement with the provided information and executes it.
+//Overrides is a map keyed on the datastore tag that allows different values to be specified than the value provided in entity.
+func (c *Cassandra) Update(table string, entity interface{}, overrides map[string]interface{}, consistency gocql.Consistency) error {
+
+	qs, params := c.BuildUpdateStatement(table, entity, overrides)
+
+	return c.Session.Bind(qs, func(q *gocql.QueryInfo) ([]interface{}, error) {
+		return params, nil
+	}).Consistency(consistency).Exec()
 }
 
 // GetById is a utility function used to simplify loading an entity from the datastore by Id. Partition Time is optional and is only used by tables that have a partition string partition key.

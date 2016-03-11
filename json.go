@@ -41,7 +41,7 @@ func (e IndexedError) Error() string {
 func WriteJSON(w http.ResponseWriter, data interface{}) {
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	str := string(b)
@@ -83,12 +83,12 @@ func WriteErrorToJSON(w http.ResponseWriter, code int, err interface{}) {
 func JSONResponse(w http.ResponseWriter, data interface{}, err interface{}) {
 
 	if _, ok := err.(NotFoundError); ok {
-		WriteErrorToJSON(w, 404, err)
+		WriteErrorToJSON(w, http.StatusNotFound, err)
 		return
 	}
 
 	if err != nil {
-		WriteErrorToJSON(w, 500, err)
+		WriteErrorToJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
