@@ -55,3 +55,13 @@ func MonetaryAmountFromString(value string) (amount MonetaryAmount, err error) {
 
 	return MonetaryAmount{dec}, nil
 }
+
+// MonetaryAmountFromStringPanic is just like MonetaryAmountFromString only it will panic if the string is invalid.
+// Useful for things like unit tests where the amount is hardcoded in the test.
+func MonetaryAmountFromStringPanic(value string) MonetaryAmount {
+	m, err := MonetaryAmountFromString(value)
+	if err != nil {
+		panic(err)
+	}
+	return m
+}
