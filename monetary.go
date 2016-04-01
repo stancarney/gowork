@@ -8,6 +8,7 @@ import (
 
 //Minimal hiding of the underlying Decimal implementation so API changes or a when better implementation comes along it won't cause huge app changes.
 type MonetaryAmount struct {
+	//TODO:Stan look at including Currency as part of MonetaryAmount.
 	*inf.Dec
 }
 
@@ -23,6 +24,10 @@ func (m MonetaryAmount) Multiply(i *inf.Dec) MonetaryAmount {
 
 func (m MonetaryAmount) Neg() MonetaryAmount {
 	return MonetaryAmount{new(inf.Dec).Neg(m.Dec)}
+}
+
+func (m MonetaryAmount) Abs() MonetaryAmount {
+	return MonetaryAmount{new(inf.Dec).Abs(m.Dec)}
 }
 
 func (m MonetaryAmount) Round(scale int) string {
