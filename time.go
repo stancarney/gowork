@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// TODO:Stan look at wrapping https://github.com/jinzhu/now.
 var offset time.Duration = 0
 
 func ClearOffset() {
@@ -42,6 +43,40 @@ func DaysBefore(t time.Time, days int) time.Time {
 
 func FloorDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
+func CeilingDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 24, 0, 0, -1, t.Location())
+}
+
+func FloorWeek(t time.Time) time.Time {
+	for t.Weekday() != time.Sunday {
+		t = t.Add(time.Hour * -24)
+	}
+	return FloorDay(t)
+}
+
+func CeilingWeek(t time.Time) time.Time {
+	for t.Weekday() != time.Saturday {
+		t = t.Add(time.Hour * 24)
+	}
+	return CeilingDay(t)
+}
+
+func FloorMonth(t time.Time) time.Time {
+	return FloorDay(time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()))
+}
+
+func CeilingMonth(t time.Time) time.Time {
+	return CeilingDay(time.Date(t.Year(), t.Month() + 1, 0, 0, 0, 0, 0, t.Location()))
+}
+
+func FloorYear(t time.Time) time.Time {
+	return FloorDay(time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location()))
+}
+
+func CeilingYear(t time.Time) time.Time {
+	return CeilingDay(time.Date(t.Year(), 12, 31, 0, 0, 0, 0, t.Location()))
 }
 
 func ToJulianDate(t time.Time) (date string) {
