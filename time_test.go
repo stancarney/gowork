@@ -92,7 +92,7 @@ func TestDaysBefore_1Week(t *testing.T) {
 	//verify
 	require.Equal(t, 2015, r.Year())
 	require.Equal(t, time.March, r.Month())
-	require.Equal(t, 17, r.Day())
+	require.Equal(t, 16, r.Day())
 	require.Equal(t, 0, r.Hour())
 	require.Equal(t, 0, r.Minute())
 	require.Equal(t, 0, r.Second())
