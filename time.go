@@ -11,6 +11,7 @@ import (
 var offset time.Duration = 0
 
 func ClearOffset() {
+	log.Printf("WARNING: ClearOffset")
 	offset = 0
 }
 
@@ -24,8 +25,8 @@ func SetOffset(val time.Duration) {
 // SetOffsetTime is only used for testing. It is used when you want to move the state of the application ahead of forward by the provided duration
 // in order to test time sensitive code. Jobs, etc...
 func SetOffsetTime(date time.Time) {
-	log.Printf("WARNING: SetOffsetTime %s", date)
-	offset = time.Since(date)
+	offset = date.Sub(CurrentTime())
+	log.Printf("WARNING: SetOffsetTime %s (%s)", date, offset)
 }
 
 // CurrentTime should be used throughout the entire system when the current time is needed. This allows the testing infrastructure to use offsets.
@@ -46,7 +47,7 @@ func FloorDay(t time.Time) time.Time {
 }
 
 func CeilingDay(t time.Time) time.Time {
-	return time.Date(t.Year(), t.Month(), t.Day(), 24, 0, 0, -1, t.Location())
+	return time.Date(t.Year(), t.Month(), t.Day(), 24, 0, -1, 0, t.Location()) //Ignore Nanoseconds
 }
 
 func FloorWeek(t time.Time) time.Time {
@@ -120,4 +121,15 @@ func UnMarshalDate(datestr string) (time.Time, error) {
 	}
 
 	return time.Time{}, fmt.Errorf("Could not parse datestr: %s (%s)", datestr, CurrentFunctionName(3))
+}
+
+// SubtractMonth subtracts one month from the provided value like AddDate, but unlike AddDate it will not normalize dates.
+// i.e. With AddDate: "December 31st".AddDate(0, -1, 0) results in December 1st because there is no November 31st.
+// With SubtractMonth "December 31st" becomes November 30.
+func SubtractMonth(t time.Time) time.Time {
+	nt := t.AddDate(0, -1, 0)
+	if t.Month() == nt.Month() {
+		nt = SubtractMonth(t.AddDate(0, 0, -1))
+	}
+	return nt
 }
