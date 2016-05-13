@@ -59,15 +59,19 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 
 		switch params[i].(type) {
 		case MonetaryAmount:
-			params[i] = params[i].(MonetaryAmount).Dec
+			params[i] = params[i].(MonetaryAmount).Dec //TODO:Stan I should really make a datastore tag for monetaryamount now that Currency is stored in Amount.
 		}
 	}
 
-	o, ok := overrides[c.Partition]
-	if ok {
-		qbuf.WriteString("," + c.Partition)
-		qmbuf.WriteString(",?")
-		params = append(params, o)
+	//Write the rest of the overrides.
+	for k, v := range overrides {
+		if len(params) > 0 {
+			qbuf.WriteString(",")
+			qmbuf.WriteString(",")
+		}
+		qbuf.WriteString(k)
+		qmbuf.WriteString("?")
+		params = append(params, v)
 	}
 
 	qbuf.WriteString(") ")
@@ -78,16 +82,17 @@ func (c *Cassandra) BuildInsertStatement(table string, entity interface{}, overr
 	qs := qbuf.String()
 
 	if c.Debug {
-		log.Printf("%s; %s\n", qs, params)
+		log.Printf("[query statement=%q values=%+v]\n", qs, params)
 	}
 
 	return qs, params
 }
 
+// BuildUpdateStatement builds a Cassandra Update statement based on the provided entity and overrides.
+// Right now it only works for entities with a single id field named id or tagged with "datastore=id".
 func (c *Cassandra) BuildUpdateStatement(table string, entity interface{}, overrides map[string]interface{}) (string, []interface{}) {
 
 	var qbuf bytes.Buffer
-	//var qmbuf bytes.Buffer
 	qbuf.WriteString("UPDATE ")
 	qbuf.WriteString(table)
 	qbuf.WriteString(" SET ")
@@ -97,6 +102,7 @@ func (c *Cassandra) BuildUpdateStatement(table string, entity interface{}, overr
 
 	var id interface{}
 
+	pindex := 0 //we need to index the param
 	for i := 0; i < val.NumField(); i++ {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
@@ -105,7 +111,8 @@ func (c *Cassandra) BuildUpdateStatement(table string, entity interface{}, overr
 			tag = strings.ToLower(typeField.Name)
 		}
 
-		if tag == "id" { //TODO: Stan look at pulling the hardcoded id out and having it set as a configuration parameter
+		//TODO: Stan look at pulling the hardcoded id out and having it set as a configuration parameter
+		if tag == "id" {
 			id = valueField.Interface()
 			continue
 		}
@@ -118,19 +125,21 @@ func (c *Cassandra) BuildUpdateStatement(table string, entity interface{}, overr
 
 		o, ok := overrides[tag]
 		if ok {
-			params[i] = o
+			params[pindex] = o
 		} else {
-			params[i] = valueField.Interface()
+			params[pindex] = valueField.Interface()
 		}
 		delete(overrides, tag)
 
-		switch params[i].(type) {
+		switch params[pindex].(type) {
 		case MonetaryAmount:
-			params[i] = params[i].(MonetaryAmount).Dec
+			params[pindex] = params[pindex].(MonetaryAmount).Dec
 		}
+
+		pindex++;
 	}
 
-	params = append(params, id)
+	params[pindex] = id
 	qbuf.WriteString(" WHERE id = ?")
 
 	o, ok := overrides[c.Partition]
@@ -145,7 +154,7 @@ func (c *Cassandra) BuildUpdateStatement(table string, entity interface{}, overr
 	qs := qbuf.String()
 
 	if c.Debug {
-		log.Printf("%s; %s\n", qs, params)
+		log.Printf("[query statement=%q values=%+v]\n", qs, params)
 	}
 
 	return qs, params
@@ -190,14 +199,15 @@ func (c *Cassandra) GetById(table string, id string, partition time.Time, entity
 	}
 
 	if c.Debug {
-		log.Printf("%s; %s\n", buf.String(), params)
+		log.Printf("[query statement=%q values=%+v]\n", buf.String(), params)
 	}
 
 	result := make(map[string]interface{})
 	if err = c.Session.Bind(buf.String(), func(q *gocql.QueryInfo) ([]interface{}, error) {
 		return params, nil
 	}).Consistency(consistency).MapScan(result); err != nil {
-		if err.Error() == "not found" { //gocql uses string messages to differentiate errors.
+		if err.Error() == "not found" {
+			//gocql uses string messages to differentiate errors.
 			return NewNotFoundError()
 		}
 		return
@@ -227,7 +237,7 @@ func (c *Cassandra) GetAll(table string, limit int, partition time.Time, entity 
 	}
 
 	if c.Debug {
-		log.Printf("%s; %s\n", buf.String(), params)
+		log.Printf("[query statement=%q values=%+v]\n", buf.String(), params)
 	}
 
 	iter := c.Session.Bind(buf.String(), func(q *gocql.QueryInfo) ([]interface{}, error) {
