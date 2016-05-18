@@ -3,15 +3,11 @@ package gowork
 import (
 	"fmt"
 	inf "gopkg.in/inf.v0"
-	"strings"
 	"github.com/stancarney/gowork/currencies"
 )
 
 var decZero = inf.NewDec(0, 2)
-
-func Zero(currency currencies.Currency) MonetaryAmount {
-	return MonetaryAmount{Dec: decZero, Currency: currency}
-}
+var Zero = MonetaryAmount{Dec: decZero}
 
 //Minimal hiding of the underlying Decimal implementation so API changes or a when better implementation comes along it won't cause huge app changes.
 type MonetaryAmount struct {
@@ -22,7 +18,17 @@ type MonetaryAmount struct {
 // Add will add the provided MonetaryAmount to the current MonetaryAmount and return a new MonetaryAmount with the summed value.
 // It will panic if the currencies differ.
 func (m MonetaryAmount) Add(ma MonetaryAmount) MonetaryAmount {
-	checkCurrencyMatch(m, ma)
+	switch {
+	case m.Currency != "" && m.Currency == ma.Currency: //Happy Case.
+	case ma.Currency == "" && ma.Dec == decZero && m.Currency != "": //m.Currency is good so we will just use that one.
+	case m.Currency == "" && m.Dec == decZero && ma.Currency != "": //m.Currency is "" so we need to set it.
+		m.Currency = ma.Currency
+	case m.Dec == decZero && ma.Dec == decZero: //both sides are uninitialized but that is ok
+		return Zero
+	default:
+		panic(fmt.Sprintf("Currency mismatch: %s != %s", m.Currency, ma.Currency))
+	}
+
 	return MonetaryAmount{Dec: new(inf.Dec).Add(m.Dec, ma.Dec), Currency: m.Currency}
 }
 
@@ -38,20 +44,17 @@ func (m MonetaryAmount) Abs() MonetaryAmount {
 	return MonetaryAmount{Dec: new(inf.Dec).Abs(m.Dec), Currency: m.Currency}
 }
 
-func (m MonetaryAmount) Round(scale int) string {
-	//TODO:Stan change to return MA?
-	return MonetaryAmount{Dec: new(inf.Dec).Round(m.Dec, inf.Scale(scale), inf.RoundHalfUp), Currency: m.Currency}.String()
+func (m MonetaryAmount) Round(scale int) MonetaryAmount {
+	return MonetaryAmount{Dec: new(inf.Dec).Round(m.Dec, inf.Scale(scale), inf.RoundHalfUp), Currency: m.Currency}
 }
 
-func (m MonetaryAmount) AssumeScale(scale int) string {
-	//TODO:Stan change to return MA?
-	return strings.Replace(m.Round(scale), ".", "", 1)
+func (m MonetaryAmount) AssumeScale(scale int) int64 {
+	return m.Round(scale).UnscaledBig().Int64()
 }
 
 // Cmp compares the provided MonetaryAmount to the current MonetaryAmount and return -1, 0, 1 based on the underlying inf.Dec.Cmp function. 
-// It will panic if the currencies differ.
+// Ignores Currency.
 func (m MonetaryAmount) Cmp(ma MonetaryAmount) int {
-	checkCurrencyMatch(m, ma)
 	return m.Dec.Cmp(ma.Dec)
 }
 
@@ -66,8 +69,24 @@ func (m *MonetaryAmount) UnmarshalText(data []byte) error {
 	return m.Dec.UnmarshalText(data)
 }
 
+func (m MonetaryAmount) StringWithCurrency() string {
+	c := string(m.Currency)
+	if c != "" {
+		c = " " + c
+	}
+	return fmt.Sprintf("%s%s", m.Dec.String(), c)
+}
+
 func (m MonetaryAmount) String() string {
-	return fmt.Sprintf("%s%4s", m.Dec.String(), m.Currency)
+	return m.Dec.String()
+}
+
+func NewMonetaryAmount(currency currencies.Currency) MonetaryAmount {
+	if currency == currencies.Currency("") {
+		panic("Currency cannot be empty")
+	}
+
+	return MonetaryAmount{Dec: decZero, Currency: currency}
 }
 
 func MonetaryAmountFromString(value string, cur string) (amount MonetaryAmount, err error) {
@@ -87,10 +106,4 @@ func MonetaryAmountFromStringPanic(value string, cur string) MonetaryAmount {
 		panic(err)
 	}
 	return m
-}
-
-func checkCurrencyMatch(m MonetaryAmount, ma MonetaryAmount) {
-	if m.Currency != ma.Currency {
-		panic(fmt.Sprintf("Currency mismatch: %s != %s", m.Currency, ma.Currency))
-	}
 }

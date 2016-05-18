@@ -3,6 +3,7 @@ package gowork
 import (
 	"github.com/stretchr/testify/require"
 	"testing"
+	"github.com/stancarney/gowork/currencies"
 )
 
 func TestIsNotZeroValue_IntZero(t *testing.T) {
@@ -44,7 +45,7 @@ func TestIsNotZeroValue_MonetaryAmountZero(t *testing.T) {
 func TestIsNotZeroValue_MonetaryAmountNotZero(t *testing.T) {
 
 	//setup
-	v := Zero // Zero as in $0.00 not as in doesn't exist.
+	v := NewMonetaryAmount(currencies.CAD) // Zero as in $0.00 not as in doesn't exist.
 
 	//execute
 	r := IsNotZeroValue(v, "")
